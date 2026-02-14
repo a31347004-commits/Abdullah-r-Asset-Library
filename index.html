@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ABVault | 100% Free Assets</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+
+    <style>
+        :root {
+            --p1: #6366f1; --bg: #020617; --card: #0f172a;
+            --text: #f8fafc; --muted: #94a3b8; --border: #1e293b;
+            --grad: radial-gradient(at 0% 0%, rgba(99,102,241,0.2) 0px, transparent 50%),
+                    radial-gradient(at 100% 100%, rgba(34,197,94,0.1) 0px, transparent 50%);
+        }
+
+        [data-theme="light"] {
+            --bg: #ffffff; --card: #f8fafc; --text: #0f172a;
+            --muted: #64748b; --border: #e2e8f0;
+            --grad: radial-gradient(at 0% 0%, rgba(99,102,241,0.1) 0px, transparent 50%),
+                    radial-gradient(at 100% 0%, rgba(6,182,212,0.1) 0px, transparent 50%);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { 
+            font-family: 'Manrope', sans-serif; background: var(--bg); color: var(--text); 
+            transition: background 0.4s ease; min-height: 100vh; overflow-x: hidden;
+        }
+
+        nav {
+            position: sticky; top: 0; z-index: 1000; height: 70px;
+            background: rgba(var(--bg), 0.8); backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border); display: flex; align-items: center;
+        }
+        .nav-content { width: 100%; max-width: 1400px; margin: 0 auto; padding: 0 20px; display: flex; align-items: center; gap: 15px; }
+        .logo { font-weight: 900; font-size: 1.5rem; letter-spacing: -1px; cursor: pointer; display: flex; align-items: center; }
+        .logo span { color: var(--p1); margin-left: 2px; }
+
+        .search-pill {
+            flex: 1; background: var(--card); border: 1px solid var(--border);
+            border-radius: 100px; display: flex; align-items: center; padding: 0 15px; height: 42px;
+        }
+        .search-pill input { background: none; border: none; outline: none; width: 100%; margin-left: 8px; color: var(--text); font-family: inherit; }
+
+        header { padding: 60px 20px 20px; text-align: center; background: var(--grad); }
+        .hero-badge { background: rgba(99,102,241,0.15); color: var(--p1); padding: 6px 16px; border-radius: 50px; font-weight: 800; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; }
+        h1 { font-size: clamp(2.5rem, 8vw, 4rem); font-weight: 900; letter-spacing: -2px; margin: 20px 0; line-height: 1; }
+        h1 span { color: var(--p1); }
+
+        .chips-container { width: 100%; overflow-x: auto; padding: 20px 0; scrollbar-width: none; }
+        .chips-container::-webkit-scrollbar { display: none; }
+        .chips { display: flex; gap: 10px; padding: 0 20px; width: max-content; margin: 0 auto; }
+        .chip {
+            padding: 10px 24px; border-radius: 100px; border: 1px solid var(--border);
+            background: var(--card); cursor: pointer; font-weight: 700; color: var(--muted);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .chip.active { background: var(--p1); color: white; border-color: var(--p1); box-shadow: 0 10px 20px rgba(99,102,241,0.3); }
+
+        main { max-width: 1400px; margin: 0 auto; padding: 20px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 20px; }
+
+        .card {
+            background: var(--card); border-radius: 24px; padding: 15px;
+            border: 1px solid var(--border); cursor: pointer;
+            transition: 0.3s ease; opacity: 0; transform: translateY(20px);
+        }
+        .card.show { opacity: 1; transform: translateY(0); }
+        .card:hover { border-color: var(--p1); transform: translateY(-8px); box-shadow: 0 20px 40px rgba(0,0,0,0.2); }
+
+        .img-box {
+            aspect-ratio: 1; background: var(--bg); border-radius: 18px;
+            display: flex; align-items: center; justify-content: center;
+            overflow: hidden; position: relative; border: 1px solid var(--border);
+        }
+        .img-box::before { content: ""; position: absolute; inset: 0; background-image: radial-gradient(var(--border) 1px, transparent 1px); background-size: 12px 12px; opacity: 0.5; }
+        .card img { max-width: 80%; max-height: 80%; object-fit: contain; z-index: 1; transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .card:hover img { transform: scale(1.15) rotate(2deg); }
+
+        /* Modal styling */
+        .modal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(12px); z-index: 2000; display: flex;
+            align-items: center; justify-content: center; visibility: hidden; opacity: 0; transition: 0.3s;
+        }
+        .modal-overlay.active { visibility: visible; opacity: 1; }
+        .modal {
+            background: var(--bg); width: 90%; max-width: 500px; border-radius: 32px;
+            padding: 30px; transform: scale(0.9); transition: 0.3s; border: 1px solid var(--border);
+        }
+        .modal-overlay.active .modal { transform: scale(1); }
+        .modal img { width: 100%; height: 300px; object-fit: contain; margin-bottom: 20px; }
+
+        .btn {
+            width: 100%; height: 56px; border-radius: 18px; border: none;
+            background: var(--p1); color: white; font-weight: 800; font-size: 1rem;
+            cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;
+        }
+
+        @media (max-width: 600px) {
+            .grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+            .modal { width: 95%; padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <div class="nav-content">
+            <div class="logo" onclick="location.reload()">AB<span>Vault</span></div>
+            <div class="search-pill">
+                <span class="material-icons-round">search</span>
+                <input type="text" id="searchInput" placeholder="Search 100% Free Assets...">
+            </div>
+            <button id="themeBtn" style="background:none; border:none; color:var(--text); cursor:pointer">
+                <span class="material-icons-round">dark_mode</span>
+            </button>
+        </div>
+    </nav>
+
+    <header>
+        <span class="hero-badge">Abdullah'r Asset Library</span>
+        <h1>Unlock Your <span>Creativity</span></h1>
+        <div class="chips-container">
+            <div class="chips" id="categoryChips">
+                <button class="chip active" data-folder="all">All Assets</button>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="grid" id="assetGrid"></div>
+    </main>
+
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
+            <img src="" id="modalImg">
+            <h2 id="modalTitle">Asset Name</h2>
+            <p id="modalFolder" style="color: var(--p1); font-weight: 800; margin-bottom: 20px; font-size: 0.8rem; text-transform: uppercase;"></p>
+            <button class="btn" id="downloadBtn">
+                <span class="material-icons-round">download</span> Download PNG
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. DATA MAPPING (Matches your exact folder names from screenshot) ---
+        const ASSETS_CONFIG = {
+            "background": ["1.png", "2.png", "3.png", "4.png", "5.png", "6.png", "7.png", "8.png", "9.png", "10.png", "11.png", "12.png", "13.png", "14.png", "15.png", "16.png", "17.png"],
+            "Car": ["1.png", "2.png", "3.png", "4.png", "5.png", "6.png", "7.png", "8.png", "9.png", "10.png"], // 
+            "Football Player Ilustration": ["1.png", "2.png", "3.png", "4.png", "5.png", "6.png", "7.png", "8.png", "9.png", "10.png"], 
+            "Money": ["1.png", "2.png", "3.png", "4.png", "5.png", "6.png", "7.png", "8.png"],
+            "Paper": ["1.png", "2.png", "3.png", "4.png", "5.png", "6.png", "7.png", "8.png", "9.png", "10.png", "11.png", "12.png", "13.png", "14.png"],
+            "Gaming": ["1.png", "2.png", "3.png", "4.png", "5.png", "6.png", "7.png", "8.png", "9.png"]
+        };
+
+        const grid = document.getElementById('assetGrid');
+        const chipContainer = document.getElementById('categoryChips');
+        const searchInput = document.getElementById('searchInput');
+        const modal = document.getElementById('modalOverlay');
+        let allItems = [];
+
+        // --- 2. INITIALIZATION ---
+        function init() {
+            Object.keys(ASSETS_CONFIG).forEach(folder => {
+                // Add category chips
+                const chip = document.createElement('button');
+                chip.className = 'chip';
+                chip.innerText = folder;
+                chip.onclick = (e) => filter(folder, e.target);
+                chipContainer.appendChild(chip);
+
+                // Populate allItems array
+                ASSETS_CONFIG[folder].forEach(fileName => {
+                    const baseName = folder.replace(/_/g, ' ').replace(/-/g, ' ');
+
+// create nice name like: Background 01, Background 02
+const prettyNumber = String(
+    ASSETS_CONFIG[folder].indexOf(fileName) + 1
+).padStart(2, '0');
+
+allItems.push({
+    name: `${baseName} ${prettyNumber}`,
+    fileName: fileName,
+    folder: folder,
+    path: `${folder}/${fileName}`
+});
+                });
+            });
+            render(allItems); // Initial render shows ALL
+        }
+
+        // --- 3. RENDER ENGINE (With Animation) ---
+        function render(data) {
+            grid.innerHTML = '';
+            data.forEach((item, index) => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <div class="img-box">
+                        <img src="${item.path}" loading="lazy" onerror="this.src='https://via.placeholder.com/200?text=PNG'">
+                    </div>
+                    <div style="margin-top:12px">
+                        <strong style="font-size:0.9rem">${item.name}</strong>
+                        <p style="font-size:0.75rem; color:var(--muted)">${item.folder}</p>
+                    </div>
+                `;
+                card.onclick = () => openModal(item);
+                grid.appendChild(card);
+                
+                // Staggered pop-in animation
+                setTimeout(() => card.classList.add('show'), index * 50);
+            });
+        }
+
+        // --- 4. THE FIX: FILTER LOGIC ---
+        function filter(category, element) {
+            // Update UI
+            document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+            element.classList.add('active');
+
+            // Logic Fix: If 'all', show everything. Else, filter by folder.
+            const filteredData = (category === 'all') 
+                ? allItems 
+                : allItems.filter(item => item.folder === category);
+            
+            render(filteredData);
+        }
+
+        // --- 5. MODAL & UTILS ---
+        function openModal(item) {
+            document.getElementById('modalImg').src = item.path;
+            document.getElementById('modalTitle').innerText = item.name;
+            document.getElementById('modalFolder').innerText = item.folder;
+            modal.classList.add('active');
+            
+            document.getElementById('downloadBtn').onclick = () => {
+                const a = document.createElement('a');
+                a.href = item.path;
+                a.download = item.name;
+                a.click();
+            };
+        }
+
+        function closeModal() { modal.classList.remove('active'); }
+        modal.onclick = (e) => { if(e.target === modal) closeModal(); };
+
+        searchInput.oninput = (e) => {
+            const val = e.target.value.toLowerCase();
+            const searchResult = allItems.filter(i => i.name.toLowerCase().includes(val));
+            render(searchResult);
+        };
+
+        document.getElementById('themeBtn').onclick = () => {
+            const current = document.documentElement.getAttribute('data-theme');
+            const next = current === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', next);
+        };
+
+        // Run
+        init();
+    </script>
+</body>
+</html>
